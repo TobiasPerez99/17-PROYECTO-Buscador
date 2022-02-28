@@ -25,7 +25,7 @@ const min = max - 10;
 //documentos
 
 document.addEventListener('DOMContentLoaded', () => {
-    mostrarAutos();
+    mostrarAutos(autos);
     cargarSelect();
     filtrar_auto();
 
@@ -36,24 +36,37 @@ marca.addEventListener('change', (e) => {
     filtrar_auto();
 });
 
-year.addEventListener('change', e => {
-    datosBusqueda.year = parseInt(e.target.value);
-    // filtrarYear();
+year.addEventListener('change', (e) => {
+    datosBusqueda.year = Number(e.target.value);
+    filtrar_auto();
+});
+minimo.addEventListener('change', (e) => { datosBusqueda.minimo = e.target.value;
+    filtrar_auto(); })
+
+maximo.addEventListener('change', (e) => { datosBusqueda.maximo = e.target.value; 
+    filtrar_auto(); 
 })
 
-minimo.addEventListener('change', e => { datosBusqueda.minimo = e.target.value; })
-maximo.addEventListener('change', e => { datosBusqueda.maximo = e.target.value; })
-puertas.addEventListener('change', e => {
-    datosBusqueda.puertas = e.target.value;
-    console.log(datosBusqueda);
-    filtrarPuertas();
+puertas.addEventListener('input', (e) => {
+    datosBusqueda.puertas = parseInt(e.target.value);
+
+    filtrar_auto();
+});
+transmision.addEventListener('change', (e) => { datosBusqueda.transmision = e.target.value; 
+    filtrar_auto();
 })
-transmision.addEventListener('change', e => { datosBusqueda.transmision = e.target.value; })
-color.addEventListener('change', e => { datosBusqueda.color = e.target.value; })
+
+color.addEventListener('change', (e) => { datosBusqueda.color = e.target.value; 
+    
+    filtrar_auto();
+})
 
 //functions
 
-function mostrarAutos() {
+function mostrarAutos(autos) {
+
+    limpiarHTML();
+
     autos.forEach(autos => {
         const { marca, modelo, year, precio, puertas, color, transmision } = autos;
         const autoHTML = document.createElement('p');
@@ -61,7 +74,14 @@ function mostrarAutos() {
         autoHTML.textContent = ` Marca:  ${marca} Modelo: ${modelo} Año:  ${year} Precio: ${precio} Puertas: ${puertas} Color: ${color} Transmision: ${transmision}`
 
         resultado.appendChild(autoHTML);
+        
     });
+}
+
+function limpiarHTML(){
+    while (resultado.firstChild) {
+        resultado.removeChild(resultado.firstChild);
+    }
 }
 
 function cargarSelect() {
@@ -77,35 +97,77 @@ function cargarSelect() {
 
 
 function filtrar_auto() {
-    const resultado = autos.filter(filtrar_marca).filter(filtrarPuertas);
+    const resultado = autos.filter(filtrar_marca).filter(filtrarYear).filter(filtrarMinimo).filter(filtrarMaximo).filter(filtrarPuertas).filter(filtrarTransmision).filter(filtrarColor);
 
-    console.log(resultado);
+    if (resultado.length) {
+        mostrarAutos(resultado);
+    }else{
+        noResultado();
+    }
+    
 }
 
-function filtrar_marca(autos) {
+function noResultado() {
+    limpiarHTML();
+
+    const noResultado = document.createElement('div');
+    noResultado.classList.add('alerta', 'error');
+    noResultado.appendChild(document.createTextNode('No hay Resultados'));
+    document.querySelector('#resultado').appendChild(noResultado);
+}
+
+function filtrar_marca(auto) {
     const { marca } = datosBusqueda;
     if (marca) {
-        return autos.marca === marca;
+        return auto.marca === marca;
     } else {
-        return autos;
+        return auto;
     }
 }
 
 
-function filtrarYear(autos) {
-    const { year } = datosBusqueda;
-    if (year) {
-        return autos.year === year;
-    } else {
-        return autos;
+function filtrarYear(auto) {
+    if (datosBusqueda.year) {
+        return auto.year === datosBusqueda.year;
     }
+    return auto;
 }
 
-function filtrarPuertas(autos) {
-    const { puertas } = datosBusqueda;
-    if (puertas) {
-        return autos.puertas === puertas;
-    } else {
-        return autos;
+function filtrarMinimo(auto){
+    const {minimo} = datosBusqueda;
+    if (minimo) {
+        return auto.precio >= minimo;
     }
+
+    return auto;
+}
+
+function filtrarMaximo(auto){
+    const {maximo} = datosBusqueda;
+    if (maximo) {
+        return auto.precio <= maximo;
+    }
+
+    return auto;
+}
+
+function filtrarPuertas(auto) {
+    if(datosBusqueda.puertas){
+        return auto.puertas === datosBusqueda.puertas;
+    }
+    return auto;
+}
+
+function filtrarTransmision(auto) {
+    if(datosBusqueda.transmision){
+        return auto.transmision === datosBusqueda.transmision;
+    } 
+    return auto;
+}
+
+function filtrarColor(auto){
+    if(datosBusqueda.color){
+        return auto.color === datosBusqueda.color;
+    } 
+    return  auto;
 }
